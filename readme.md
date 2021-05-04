@@ -82,5 +82,8 @@ $ cd ek_datasets
 
 # Download the annotations
 $ ./setup_annotations.sh
+
+# Optionally run the usage example
+$ python example.py
 ```
 
