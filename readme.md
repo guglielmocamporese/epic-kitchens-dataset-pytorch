@@ -11,25 +11,24 @@ from torchvision import transforms
 from input_loaders import ActionRecognitionSampler, FramesLoader, FeaturesLoader, PipeLoaders
 from utils import get_ek55_annotation
 
-# Create clip samples and frame loader
+# Create clip samples and clip loader
 sampler = ActionRecognitionSampler(sample_mode='center', num_frames_per_action=16)
 loader = PipeLoaders([
     FramesLoader(sampler, 'path/to/frames', fps=5.0, transform_frame=transforms.ToTensor()),
     FeaturesLoader(sampler, 'path/to/features', fps=5.0, input_name='obj'),
 ])
-ann = get_ek55_annotation(partition='train')
-ds = EpicDataset(ann, partition='train', loader=loader, task='recognition')
+ann = get_ek55_annotation(partition='train') # Load annotations
+ds = EpicDataset(ann, partition='train', loader=loader, task='recognition') # Create the EK dataset
 
+# Get sample
 sample = next(iter(ds))
 
-"""
-sample['uid'] -> int
-sample['frame'] -> tensor of shape [C, T, H, W]
-sample['obj'] -> tensor of shape [T, D]
-sample['noun_class'] -> int
-sample['verb_class'] -> int
-sample['action_class'] -> int
-"""
+# sample['uid'] -> int
+# sample['frame'] -> tensor of shape [C, T, H, W]
+# sample['obj'] -> tensor of shape [T, D]
+# sample['noun_class'] -> int
+# sample['verb_class'] -> int
+# sample['action_class'] -> int
 
 ```
 
