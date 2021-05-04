@@ -48,7 +48,7 @@ dataloaders = get_dataloaders(args)
 
 # Install
 
-First you have to clone this repo
+For the installation, you have to clone this repo and download the annotations following:
 
 ```sh
 # Clone the project
@@ -56,10 +56,8 @@ $ git clone https://github.com/guglielmocamporese/epic-kitchens-dataset-pytorch.
 
 # Go to the project folder
 $ cd ek_datasets
-```
 
-Then you have to download the annotations of the EPIC-Kitchens datasets
-
-```sh
+# Download the annotations
 $ ./setup_annotations.sh
 ```
+
