@@ -6,15 +6,15 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-
 # Configs
+SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 ANNOTATIONS_PATH = {
-    'ek55': './annotations/epic-kitchens-55-annotations',
-    'ek100': './annotations/epic-kitchens-100-annotations',
+    'ek55': os.path.join(SCRIPT_PATH, 'annotations/epic-kitchens-55-annotations'),
+    'ek100': os.path.join(SCRIPT_PATH, 'annotations/epic-kitchens-100-annotations'),
 }
 RULSTM_ANNOTATIONS_PATH = {
-    'ek55': './annotations/rulstm/RULSTM/data/ek55',
-    'ek100': './annotations/rulstm/RULSTM/data/ek100',
+    'ek55': os.path.join(SCRIPT_PATH, 'annotations/rulstm/RULSTM/data/ek55'),
+    'ek100': os.path.join(SCRIPT_PATH, 'annotations/rulstm/RULSTM/data/ek100'),
 }
 
 # Utils
