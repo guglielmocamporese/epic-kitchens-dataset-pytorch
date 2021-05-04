@@ -51,7 +51,7 @@ loader = PipeLoaders([
     FramesLoader(sampler, 'path/to/frames', fps=5.0, transform_frame=transforms.ToTensor()),
     FeaturesLoader(sampler, 'path/to/features', fps=5.0, input_name='obj'),
 ])
-csv = get_ek100_annotation(partition='train') # Load annotations (dataframe)
+csv = get_ek55_annotation(partition='train', use_rulstm_splits=True) # Load annotations (dataframe)
 ds = EpicDataset(csv, partition='train', loader=loader, task='recognition') # Create the EK dataset
 
 # Get sample
