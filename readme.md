@@ -21,28 +21,20 @@ class Args(object):
             'ek100': './annotations/epic-kitchens-100-annotations/frames',
         }
         self.ek_version = 'ek55' # 'ek55' or 'ek100'
-        self.fps = 4.0
-        
+        self.fps = 4.0 # sample rate to consider
         self.batch_size = 32
         self.num_workers = 0
-        
         self.num_frames_per_action = 8
-        self.sample_mode = 'uniform'
-        
-        self.modalities = 'frames rgb flow obj'
-        
+        self.sample_mode = 'uniform' # 'uniform', 'center' or  'center_hard'
+        self.modalities = 'frames rgb flow obj' # choose a combination of the inputs
         self.validation_ratio = 0.2
         self.use_rulstm_splits = False
-        
-        self.mode = 'train'
-        
-        self.height = 224
-        self.width = 224
-        
-        self.task = 'anticipation'
-        
-        self.t_buffer = 3.5
-        self.t_ant = 1.0
+        self.mode = 'train' # 'train', 'validation' or 'test'
+        self.height = 224 # resized height
+        self.width = 224 # resized width
+        self.task = 'anticipation' # 'recognition' or 'anticipation'
+        self.t_buffer = 3.5 # anticipation buffer before the action, in sec
+        self.t_ant = 1.0 # anticipation time, in sec
 
 # Get args
 args = Args()
