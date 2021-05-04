@@ -73,18 +73,18 @@ def split_train_val(df, validation_ratio=0.2, use_rulstm_splits=False, rulstm_an
             raise Exception(f'Error. Validation "{validation_ratio}" not supported.')
     return df_train, df_validation
 
-def create_actions_df(args, out_path='actions.csv'):
+def create_actions_df(ek_version, out_path='actions.csv'):
     """
     Save actions.csv with actions labels.
     """
-    if args.ek_version == 'ek55':
-        df_train = get_ek55_annotation(ANNOTATIONS_PATH['ek55'], 'train', raw=True)
-        df_validation = get_ek55_annotation(ANNOTATIONS_PATH['ek55'], 'validation', raw=True)
+    if ek_version == 'ek55':
+        df_train = get_ek55_annotation('train', raw=True)
+        df_validation = get_ek55_annotation('validation', raw=True)
         df = pd.concat([df_train, df_validation])
         df.sort_values(by=['uid'], inplace=True)
-    elif args.ek_version == 'ek100':
-        df_train = get_ek100_annotation(ANNOTATIONS_PATH['ek100'], 'train', raw=True)
-        df_validation = get_ek100_annotation(ANNOTATIONS_PATH['ek100'], 'validation', raw=True)
+    elif ek_version == 'ek100':
+        df_train = get_ek100_annotation('train', raw=True)
+        df_validation = get_ek100_annotation('validation', raw=True)
         df = pd.concat([df_train, df_validation])
         df.sort_values(by=['narration_id'], inplace=True)
 
@@ -164,7 +164,7 @@ def get_ek55_annotation(partition, validation_ratio=0.2, use_rulstm_splits=False
     df_nouns = pd.read_csv(os.path.join(ANNOTATIONS_PATH['ek55'], 'EPIC_noun_classes.csv'))
     actions_df_path = os.path.join(ANNOTATIONS_PATH['ek55'], 'actions.csv')
     if not os.path.exists(actions_df_path):
-        create_actions_df(args, out_path=actions_df_path)
+        create_actions_df('ek55', out_path=actions_df_path)
     df_actions = pd.read_csv(actions_df_path)
 
     # Process dataframe
@@ -219,7 +219,7 @@ def get_ek100_annotation(partition, validation_ratio=0.2, use_rulstm_splits=Fals
     df_nouns = pd.read_csv(os.path.join(ANNOTATIONS_PATH['ek100'], 'EPIC_100_noun_classes.csv'))
     actions_df_path = os.path.join(ANNOTATIONS_PATH['ek100'], 'actions.csv')
     if not os.path.exists(actions_df_path):
-        create_actions_df(args, actions_df_path)
+        create_actions_df('ek100', actions_df_path)
     df_actions = pd.read_csv(actions_df_path)
 
     # Process dataframe

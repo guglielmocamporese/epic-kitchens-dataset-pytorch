@@ -3,6 +3,7 @@
 ##################################################
 
 from torch.utils.data import Dataset, DataLoader, Subset
+from tqdm import tqdm
 
 # Custom
 from utils import get_ek55_annotation, get_ek100_annotation
