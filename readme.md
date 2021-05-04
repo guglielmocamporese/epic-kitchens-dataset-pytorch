@@ -23,12 +23,14 @@ ds = EpicDataset(ann, partition='train', loader=loader, task='recognition') # Cr
 # Get sample
 sample = next(iter(ds))
 
-# sample['uid'] -> int
-# sample['frame'] -> tensor of shape [C, T, H, W]
-# sample['obj'] -> tensor of shape [T, D]
-# sample['noun_class'] -> int
-# sample['verb_class'] -> int
-# sample['action_class'] -> int
+"""
+sample['uid'] -> int
+sample['frame'] -> tensor of shape [C, T, H, W]
+sample['obj'] -> tensor of shape [T, D]
+sample['noun_class'] -> int
+sample['verb_class'] -> int
+sample['action_class'] -> int
+"""
 
 ```
 
