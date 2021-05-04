@@ -7,6 +7,9 @@ from PIL import Image
 from torchvision import transforms
 import torch
 
+# Configs
+_FPS = 30.0
+
 
 ##################################################
 # Samplers
