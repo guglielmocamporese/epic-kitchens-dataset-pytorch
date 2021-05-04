@@ -2,7 +2,7 @@
 
 A PyTorch Dataset for the **EPIC-Kitchens-55** and the **EPIC-Kitchens-100** datasets.
 
-In particular, it handles **frames** and **features** from provided by RULSTM project [[link](https://github.com/fpv-iplab/rulstm)] for both the **Action recognition** and the **Action Anticipation** tasks.
+In particular, it handles **frames** and **features** (the latter provided by the RULSTM repo [[link](https://github.com/fpv-iplab/rulstm)]) for both the **Action recognition** and the **Action Anticipation** tasks.
 
 If you use the code of this repo and you find this project useful, please consider to give a star ⭐!
 
