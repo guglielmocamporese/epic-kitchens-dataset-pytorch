@@ -17,8 +17,8 @@ loader = PipeLoaders([
     FramesLoader(sampler, 'path/to/frames', fps=5.0, transform_frame=transforms.ToTensor()),
     FeaturesLoader(sampler, 'path/to/features', fps=5.0, input_name='obj'),
 ])
-ann = get_ek55_annotation(partition='train') # Load annotations
-ds = EpicDataset(ann, partition='train', loader=loader, task='recognition') # Create the EK dataset
+csv = get_ek55_annotation(partition='train') # Load annotations (dataframe)
+ds = EpicDataset(csv, partition='train', loader=loader, task='recognition') # Create the EK dataset
 
 # Get sample
 sample = next(iter(ds))
@@ -35,6 +35,36 @@ sample['action_class'] -> int
 ```
 
 # Action Anticipation Usage Example
+
+```python
+# Imports
+from torchvision import transforms
+from input_loaders import ActionAnticipationSampler, FramesLoader, FeaturesLoader, PipeLoaders
+from utils import get_ek55_annotation
+
+# Create clip samples and clip loader
+sampler = ActionAnticipationSampler(t_buffer=3.5, t_ant=1.0, fps=5.0)
+loader = PipeLoaders([
+    FramesLoader(sampler, 'path/to/frames', fps=5.0, transform_frame=transforms.ToTensor()),
+    FeaturesLoader(sampler, 'path/to/features', fps=5.0, input_name='obj'),
+])
+csv = get_ek55_annotation(partition='train') # Load annotations (dataframe)
+ds = EpicDataset(csv, partition='train', loader=loader, task='recognition') # Create the EK dataset
+
+# Get sample
+sample = next(iter(ds))
+
+"""
+sample['uid'] -> int
+sample['frame'] -> tensor of shape [C, T, H, W]
+sample['obj'] -> tensor of shape [T, D]
+sample['mask'] -> tensor of shape [T]
+sample['noun_class'] -> int
+sample['verb_class'] -> int
+sample['action_class'] -> int
+"""
+
+```
 
 # Install
 
