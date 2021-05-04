@@ -51,22 +51,26 @@ dataloaders = get_dataloaders(args)
 First you have to clone this repo
 
 ```sh
-git clone https://github.com/guglielmocamporese/epic-kitchens-dataset-pytorch.git ek_datasets
-cd ek_datasets
+# Clone the project
+$ git clone https://github.com/guglielmocamporese/epic-kitchens-dataset-pytorch.git ek_datasets
+
+# Go to the project folder
+$ cd ek_datasets
 ```
 
 Then you have to download the annotations of the EPIC-Kitchens datasets
 
 ```sh
-mkdir annotations
+Create annotation folder
+$ mkdir annotations
 
 # Download EK-55 annotations
-git clone https://github.com/epic-kitchens/epic-kitchens-55-annotations.git annotations/epic-kitchens-55-annotations
+$ git clone https://github.com/epic-kitchens/epic-kitchens-55-annotations.git annotations/epic-kitchens-55-annotations
 
 # Download EK-100 annotations
-git clone https://github.com/epic-kitchens/epic-kitchens-100-annotations.git annotations/epic-kitchens-100-annotations
+$ git clone https://github.com/epic-kitchens/epic-kitchens-100-annotations.git annotations/epic-kitchens-100-annotations
 
 # Download RULSTM annotations
-git clone https://github.com/fpv-iplab/rulstm.git annotations/rulstm
+$ git clone https://github.com/fpv-iplab/rulstm.git annotations/rulstm
 
 ```
