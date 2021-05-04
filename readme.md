@@ -48,7 +48,7 @@ dataloaders = get_dataloaders(args)
 
 # Install
 
-For the installation, you have to clone this repo and download the annotations following:
+For the installation, you have to clone this repo and download the annotations as follows:
 
 ```sh
 # Clone the project
