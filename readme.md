@@ -1,7 +1,7 @@
 # EPIC-Kitchens PyTorch Dataset
 
 A PyTorch dataset that reads the EPIC-Kitchens-55 and the EPIC-Kitchens-100.
-In particular, it handles frames and features from RULSTM for both the *action recignition* and the *action anticipation* tasks.
+In particular, it handles frames and features from RULSTM for both the *action recognition* and the *action anticipation* tasks.
 
 # Simple Usage Example
 
