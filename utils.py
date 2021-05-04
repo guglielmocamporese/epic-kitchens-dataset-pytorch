@@ -77,12 +77,12 @@ def create_actions_df(args, out_path='actions.csv'):
     """
     Save actions.csv with actions labels.
     """
-    if args.ek_version == 55:
+    if args.ek_version == 'ek55':
         df_train = get_ek55_annotation(ANNOTATIONS_PATH['ek55'], 'train', raw=True)
         df_validation = get_ek55_annotation(ANNOTATIONS_PATH['ek55'], 'validation', raw=True)
         df = pd.concat([df_train, df_validation])
         df.sort_values(by=['uid'], inplace=True)
-    elif args.ek_version == 100:
+    elif args.ek_version == 'ek100':
         df_train = get_ek100_annotation(ANNOTATIONS_PATH['ek100'], 'train', raw=True)
         df_validation = get_ek100_annotation(ANNOTATIONS_PATH['ek100'], 'validation', raw=True)
         df = pd.concat([df_train, df_validation])
