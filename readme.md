@@ -3,6 +3,8 @@
 A PyTorch dataset that reads the EPIC-Kitchens-55 and the EPIC-Kitchens-100.
 In particular, it handles frames and features from RULSTM for both the *action recognition* and the *action anticipation* tasks.
 
+If you use the code of this repo and you find this project useful, please consider to give a star ⭐!
+
 # Action Recognition Usage Example
 
 ```python
