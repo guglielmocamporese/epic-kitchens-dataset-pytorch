@@ -227,14 +227,14 @@ def get_features_loader(args):
     sampler = get_sampler(args)
     modalities = args.modalities.split()
     feat_in_modalities = list({'rgb', 'flow', 'obj'}.intersection(set(modalities)))
-    transform_feat = lambda x: torch.tensor(x)
+    transform_feat = lambda x: torch.tensor(x.copy())
     transform_video = lambda x: torch.stack(x, 0) # [T, D]
     loader_args = {
         'feature_base_path': args.features_paths[args.ek_version], 
         'fps': args.fps,  
         'frame_tmpl': '{}_frame_{:010d}.jpg', 
-        'sample_mode': args.sample_mode, 
-        'num_frames_per_action': args.num_frames_per_action,
+        'sample_mode': args.sample_mode if args.task == 'recognition' else None, 
+        'num_frames_per_action': args.num_frames_per_action if args.task == 'recognition' else None,
         'transform_feat': transform_feat,
         'transform_video': transform_video,
         'sampler': sampler,
@@ -262,10 +262,11 @@ def get_loaders(args):
     }
     
     # Frames loader
-    frame_loaders = get_frames_loader(args)
-    for k, l in frame_loaders.items():
-        if l is not None:
-            loaders[k] += [l]
+    if 'frame' in args.modalities:
+        frame_loaders = get_frames_loader(args)
+        for k, l in frame_loaders.items():
+            if l is not None:
+                loaders[k] += [l]
             
     # Features
     feat_loaders = get_features_loader(args)
