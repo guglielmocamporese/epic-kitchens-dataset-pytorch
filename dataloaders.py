@@ -198,19 +198,19 @@ def get_datasets(args):
         'task': args.task,
         't_ant': args.t_ant,
     }
-    if args.mode == 'train':
+    if args.mode in ['train', 'training']:
         dss = {
             'train': EpicDataset(df=dfs['train'], partition='train', loader=loaders['train'], **ds_args),
             'train_aug': EpicDataset(df=dfs['train'], partition='train', loader=loaders['train_aug'], **ds_args),
             'validation': EpicDataset(df=dfs['validation'], partition='validation', 
                                       loader=loaders['validation'], **ds_args),
         }
-    elif args.mode == 'validation': 
+    elif args.mode in ['validation', 'validating', 'validate']: 
         dss = {
             'validation': EpicDataset(df=dfs['validation'], partition='validation', 
                                       loader=loaders['validation'], **ds_args),
         }
-    elif args.mode == 'test':
+    elif args.mode in ['test', 'testing']:
         
         if args.ek_version == 55:
             dss = {
