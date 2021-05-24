@@ -237,13 +237,13 @@ def get_dataloaders(args):
         'pin_memory': True,
         'num_workers': args.num_workers,
     }
-    if args.mode == 'train':
+    if args.mode in ['train', 'training']:
         dls = {
             'train': DataLoader(dss['train'], shuffle=False, **dl_args),
             'train_aug': DataLoader(dss['train_aug'], shuffle=True, **dl_args),
             'validation': DataLoader(dss['validation'], shuffle=False, **dl_args),
         }
-    elif args.mode == 'validation':
+    elif args.mode in ['validate', 'validation', 'validating']:
         dls = {
             'validation': DataLoader(dss['validation'], shuffle=False, **dl_args),
         }

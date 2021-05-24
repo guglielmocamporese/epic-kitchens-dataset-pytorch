@@ -73,47 +73,64 @@ def split_train_val(df, validation_ratio=0.2, use_rulstm_splits=False, rulstm_an
             raise Exception(f'Error. Validation "{validation_ratio}" not supported.')
     return df_train, df_validation
 
-def create_actions_df(ek_version, out_path='actions.csv'):
+def create_actions_df(ek_version, out_path='actions.csv', use_rulstm_splits=True):
     """
     Save actions.csv with actions labels.
     """
-    if ek_version == 'ek55':
-        df_train = get_ek55_annotation('train', raw=True)
-        df_validation = get_ek55_annotation('validation', raw=True)
-        df = pd.concat([df_train, df_validation])
-        df.sort_values(by=['uid'], inplace=True)
-    elif ek_version == 'ek100':
-        df_train = get_ek100_annotation('train', raw=True)
-        df_validation = get_ek100_annotation('validation', raw=True)
-        df = pd.concat([df_train, df_validation])
-        df.sort_values(by=['narration_id'], inplace=True)
+    if use_rulstm_splits:
+        if ek_version == 'ek55':
+            df_actions = pd.read_csv(os.path.join(RULSTM_ANNOTATIONS_PATH['ek55'], 'actions.csv'))
+        elif ek_version == 'ek100':
+            df_actions = pd.read_csv(os.path.join(RULSTM_ANNOTATIONS_PATH['ek100'], 'actions.csv'))
 
-    noun_classes = df.noun_class.values
-    nouns = df.noun.values
-    verb_classes = df.verb_class.values
-    verbs = df.verb.values
+        df_actions['verb_class'] = df_actions.verb
+        df_actions['noun_class'] = df_actions.noun
+        df_actions['verb'] = df_actions.action.map(lambda x: x.split('_')[0])
+        df_actions['noun'] = df_actions.action.map(lambda x: x.split('_')[1])
+        df_actions['action'] = df_actions.action
+        df_actions['action_class'] = df_actions.id
+        del df_actions['id']
 
-    actions_combinations = [f'{v}_{n}' for v, n in zip(verb_classes, noun_classes)]
-    actions = [f'{v}_{n}' for v, n in zip(verbs, nouns)]
+    else:
+        if ek_version == 'ek55':
+            df_train = get_ek55_annotation('train', raw=True)
+            df_validation = get_ek55_annotation('validation', raw=True)
+            df = pd.concat([df_train, df_validation])
+            df.sort_values(by=['uid'], inplace=True)
 
-    df_actions = {'verb_class': [], 'noun_class': [], 'verb': [], 'noun': [], 'action': []}
-    vn_combinations = []
-    for i, a in enumerate(actions_combinations):
-        if a in vn_combinations:
-            continue
+        elif ek_version == 'ek100':
+            df_train = get_ek100_annotation('train', raw=True)
+            df_validation = get_ek100_annotation('validation', raw=True)
+            df = pd.concat([df_train, df_validation])
+            df.sort_values(by=['narration_id'], inplace=True)
 
-        v, n = a.split('_')
-        v = int(v)
-        n = int(n)
-        df_actions['verb_class'] += [v]
-        df_actions['noun_class'] += [n]
-        df_actions['action'] += [actions[i]]
-        df_actions['verb'] += [verbs[i]]
-        df_actions['noun'] += [nouns[i]]
-        vn_combinations += [a]
-    df_actions = pd.DataFrame(df_actions)
-    df_actions.sort_values(by=['verb_class', 'noun_class'], inplace=True)
-    df_actions['action_class'] = range(len(df_actions))
+        noun_classes = df.noun_class.values
+        nouns = df.noun.values
+        verb_classes = df.verb_class.values
+        verbs = df.verb.values
+
+        actions_combinations = [f'{v}_{n}' for v, n in zip(verb_classes, noun_classes)]
+        actions = [f'{v}_{n}' for v, n in zip(verbs, nouns)]
+
+        df_actions = {'verb_class': [], 'noun_class': [], 'verb': [], 'noun': [], 'action': []}
+        vn_combinations = []
+        for i, a in enumerate(actions_combinations):
+            if a in vn_combinations:
+                continue
+
+            v, n = a.split('_')
+            v = int(v)
+            n = int(n)
+            df_actions['verb_class'] += [v]
+            df_actions['noun_class'] += [n]
+            df_actions['action'] += [actions[i]]
+            df_actions['verb'] += [verbs[i]]
+            df_actions['noun'] += [nouns[i]]
+            vn_combinations += [a]
+        df_actions = pd.DataFrame(df_actions)
+        df_actions.sort_values(by=['verb_class', 'noun_class'], inplace=True)
+        df_actions['action_class'] = range(len(df_actions))
+
     df_actions.to_csv(out_path, index=False)
     print(f'Saved file at "{out_path}".')
 
@@ -164,7 +181,7 @@ def get_ek55_annotation(partition, validation_ratio=0.2, use_rulstm_splits=False
     df_nouns = pd.read_csv(os.path.join(ANNOTATIONS_PATH['ek55'], 'EPIC_noun_classes.csv'))
     actions_df_path = os.path.join(ANNOTATIONS_PATH['ek55'], 'actions.csv')
     if not os.path.exists(actions_df_path):
-        create_actions_df('ek55', out_path=actions_df_path)
+        create_actions_df('ek55', out_path=actions_df_path, use_rulstm_splits=True)
     df_actions = pd.read_csv(actions_df_path)
 
     # Process dataframe
