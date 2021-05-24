@@ -43,7 +43,7 @@ class ActionAnticipationSampler(object):
         return times, frames_idxs, mask
     
 def get_sampler(args):
-    if args.task == 'recognition':
+    if args.task in ['recognition', 'all_frames']:
         sampler = ActionRecognitionSampler(fps=args.fps, sample_mode=args.sample_mode, 
                                            num_frames_per_action=args.num_frames_per_action)
         
@@ -58,6 +58,8 @@ def get_sampler(args):
 def sample_action_recognition_frames(time_start, time_stop, video_duration, fps=5.0, sample_mode='center', 
                                      num_frames_per_action=16, fps_init=30.0):
     if sample_mode == 'center':
+        if num_frames_per_action is None:
+            num_frames_per_action = int((time_stop - time_start) * fps) + 1
         t_c = (time_start + time_stop) / 2.0
         times = np.arange(num_frames_per_action) / fps
         times = times - times.max() / 2 + t_c

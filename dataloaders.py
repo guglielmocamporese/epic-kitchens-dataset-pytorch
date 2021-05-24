@@ -6,8 +6,8 @@ from torch.utils.data import Dataset, DataLoader, Subset
 from tqdm import tqdm
 
 # Custom
-from .utils import get_ek55_annotation, get_ek100_annotation
-from .input_loaders import get_loaders
+from utils import get_ek55_annotation, get_ek100_annotation
+from input_loaders import get_loaders
 
 
 ##################################################
@@ -104,6 +104,17 @@ class EpicVideo(object):
                     actions_invalid += [action]
         return actions, actions_invalid
 
+class EpicClip(object):
+    def __init__(self, video_id, time_start, time_stop, fps=None, num_frames=None, video_duration=None):
+        self.video_id = video_id
+        self.start_time = time_start
+        self.stop_time = time_stop
+        self.video_duration = math.inf if video_duration is None else video_duration
+        
+        assert not ((fps is None) and (num_frames is None))
+        self.fps = fps
+        self.num_frames = num_frames
+
 
 ##################################################
 # EpicKitchens Dataset
@@ -165,6 +176,55 @@ class EpicDataset(Dataset):
             sample['action_class'] = a.action_class
         return sample
 
+
+class EpicDatasetAllFrames(Dataset):
+    def __init__(self, df, partition, fps=5.0, loader=None, clip_duration=2.0, stride=None, *args, **kwargs):
+        super().__init__()
+        self.df = df
+        self.partition = partition
+        self.fps = fps
+        self.loader = loader
+        self.clip_duration = clip_duration
+        self.stride = clip_duration if stride is None else stride
+        
+        self.clips = self._get_video_clips()
+        
+    def _get_video_clips(self):
+        video_ids = sorted(list(set(self.df['video_id'].values.tolist())))
+        clips = []
+        pbar = tqdm(desc=f'Loading {self.partition} samples', total=len(video_ids))
+        for video_id in video_ids:
+            df_video = self.df[self.df['video_id'] == video_id].copy()
+            video_duration = df_video.stop_time.values.max()
+            time_start = 0.0
+            time_stop = self.clip_duration
+            
+            while time_stop <= video_duration:
+                clip = EpicClip(video_id, time_start, time_stop - 1.0 / self.fps, fps=self.fps, 
+                                video_duration=video_duration)
+                
+                clips += [clip]
+                time_start += self.stride
+                time_stop += self.stride
+            pbar.update(1)
+        pbar.close()
+        
+        return clips
+    
+    def __len__(self):
+        return len(self.clips)
+    
+    def __getitem__(self, idx):
+        sample = {}
+        clip = self.clips[idx]
+        inputs = self.loader(clip)
+        sample.update(inputs)
+        
+        sample['video_id'] = clip.video_id
+        return sample
+            
+
+
 def get_datasets(args):
     
     # Loaders
@@ -193,33 +253,43 @@ def get_datasets(args):
         raise Exception(f'Error. EPIC-Kitchens Version "{args.ek_version}" not supported.')
 
     # Datasets
-    ds_args = {
-        'fps': args.fps,
-        'task': args.task,
-        't_ant': args.t_ant,
-    }
+    if args.task in ['recognition', 'anticipation']:
+        ds_args = {
+            'fps': args.fps,
+            'task': args.task,
+            't_ant': args.t_ant,
+        }
+        epic_ds = EpicDataset
+    else:
+        ds_args = {
+            'fps': args.fps,
+            'clip_duration': args.clip_duration,
+            'stride': None,
+        }
+        epic_ds = EpicDatasetAllFrames
+
     if args.mode in ['train', 'training']:
         dss = {
-            'train': EpicDataset(df=dfs['train'], partition='train', loader=loaders['train'], **ds_args),
-            'train_aug': EpicDataset(df=dfs['train'], partition='train', loader=loaders['train_aug'], **ds_args),
-            'validation': EpicDataset(df=dfs['validation'], partition='validation', 
+            'train': epic_ds(df=dfs['train'], partition='train', loader=loaders['train'], **ds_args),
+            'train_aug': epic_ds(df=dfs['train'], partition='train', loader=loaders['train_aug'], **ds_args),
+            'validation': epic_ds(df=dfs['validation'], partition='validation', 
                                       loader=loaders['validation'], **ds_args),
         }
     elif args.mode in ['validation', 'validating', 'validate']: 
         dss = {
-            'validation': EpicDataset(df=dfs['validation'], partition='validation', 
+            'validation': epic_ds(df=dfs['validation'], partition='validation', 
                                       loader=loaders['validation'], **ds_args),
         }
     elif args.mode in ['test', 'testing']:
         
         if args.ek_version == 55:
             dss = {
-                'test_s1': EpicDataset(df=dfs['test_s1'], partition='test_s1', loader=loaders['test'], **ds_args),
-                'test_s2': EpicDataset(df=dfs['test_s2'], partition='test_s2', loader=loaders['test'], **ds_args),
+                'test_s1': epic_ds(df=dfs['test_s1'], partition='test_s1', loader=loaders['test'], **ds_args),
+                'test_s2': epic_ds(df=dfs['test_s2'], partition='test_s2', loader=loaders['test'], **ds_args),
             }
         elif args.ek_version == 100:
             dss = {
-                'test': EpicDataset(df=dfs['test'], partition='test', loader=loaders['test'], **ds_args),
+                'test': epic_ds(df=dfs['test'], partition='test', loader=loaders['test'], **ds_args),
             }
     else:
         raise Exception(f'Error. Mode "{args.mode}" not supported.')
