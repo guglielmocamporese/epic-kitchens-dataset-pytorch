@@ -5,6 +5,7 @@
 import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import numpy as np
 
 # Configs
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -82,6 +83,7 @@ def create_actions_df(ek_version, out_path='actions.csv', use_rulstm_splits=True
             df_actions = pd.read_csv(os.path.join(RULSTM_ANNOTATIONS_PATH['ek55'], 'actions.csv'))
         elif ek_version == 'ek100':
             df_actions = pd.read_csv(os.path.join(RULSTM_ANNOTATIONS_PATH['ek100'], 'actions.csv'))
+            df_actions['action'] = df_actions.action.map(lambda x: x.replace(' ', '_'))
 
         df_actions['verb_class'] = df_actions.verb
         df_actions['noun_class'] = df_actions.noun
