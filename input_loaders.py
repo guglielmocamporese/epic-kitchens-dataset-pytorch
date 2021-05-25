@@ -41,6 +41,28 @@ class ActionAnticipationSampler(object):
         times, frames_idxs, mask = sample_action_anticipation_frames(action.start_time, self.t_buffer, 
                                                                       self.t_ant, fps=self.fps, fps_init=_FPS)
         return times, frames_idxs, mask
+
+class ActionAnticipationAndRecognitionSampler(object):
+    def __init__(self, t_buffer, t_ant, fps=5.0, sample_mode='center', num_frames_per_action=16):
+        self.t_buffer = t_buffer
+        self.t_ant = t_ant
+        self.fps = fps
+        self.sample_mode = sample_mode
+        self.num_frames_per_action = num_frames_per_action
+    
+    def __call__(self, action):
+        times_ant, frames_idxs_ant, mask_ant = sample_action_anticipation_frames(action.start_time, self.t_buffer, 
+                                                                     self.t_ant, fps=self.fps, fps_init=_FPS)
+        times_rec, frames_idxs_rec = sample_action_recognition_frames(action.start_time, action.stop_time,
+                                                              action.video_duration, fps=self.fps,
+                                                              sample_mode=self.sample_mode,
+                                                              num_frames_per_action=self.num_frames_per_action,
+                                                              fps_init=_FPS)
+        times = np.concatenate([times_ant, times_rec])
+        frames_idxs = np.concatenate([frames_idxs_ant, frames_idxs_rec])
+        #mask = np.concatenate([mask_ant, np.zeros([len(frames_idxs_rec)])])
+        return times, frames_idxs, mask_ant
+
     
 def get_sampler(args):
     if args.task in ['recognition', 'all_frames']:
@@ -49,7 +71,12 @@ def get_sampler(args):
         
     elif args.task == 'anticipation': 
         sampler = ActionAnticipationSampler(t_buffer=args.t_buffer, t_ant=args.t_ant, fps=args.fps)
-        
+
+    elif args.task == 'anticipation_recognition':
+        sampler = ActionAnticipationAndRecognitionSampler(t_buffer=args.t_buffer, t_ant=args.t_ant, fps=args.fps, 
+                                                          sample_mode=args.sample_mode, 
+                                                          num_frames_per_action=args.num_frames_per_action)
+
     else:
         raise Exception(f'Error. Task "{args.task}" not supported.')
     return sampler
@@ -179,7 +206,7 @@ class FeaturesLoader(object):
         if self.transform_video is not None:
             feats = self.transform_video(feats)
         out = {self.input_name: feats}
-        if self.task == 'anticipation':
+        if 'anticipation' in self.task:
             out['mask'] = mask
         return out
     

@@ -95,7 +95,7 @@ class EpicVideo(object):
             action = EpicAction(**action_args)
             if self.task == 'recognition':
                 actions += [action]
-            elif self.task == 'anticipation':
+            elif self.task in ['anticipation', 'anticipation_recognition']:
                 assert self.t_ant is not None
                 assert self.t_ant > 0.0
                 if action.start_time - self.t_ant >= 0:
@@ -143,7 +143,7 @@ class EpicDataset(Dataset):
                 'fps': self.fps,
                 'partition': self.partition,
                 'task': self.task,
-                't_ant': self.t_ant if self.task == 'anticipation' else None,
+                't_ant': self.t_ant if self.task in ['anticipation', 'anticipation_recognition'] else None,
             }
             video = EpicVideo(**video_args)
             videos += [video]
@@ -253,7 +253,7 @@ def get_datasets(args):
         raise Exception(f'Error. EPIC-Kitchens Version "{args.ek_version}" not supported.')
 
     # Datasets
-    if args.task in ['recognition', 'anticipation']:
+    if args.task in ['recognition', 'anticipation', 'anticipation_recognition']:
         ds_args = {
             'fps': args.fps,
             'task': args.task,
