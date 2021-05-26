@@ -208,6 +208,8 @@ class FeaturesLoader(object):
         out = {self.input_name: feats}
         if 'anticipation' in self.task:
             out['mask'] = mask
+        out['times'] = times
+        out['start_time'] = action.start_time
         return out
     
 
