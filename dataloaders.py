@@ -48,6 +48,9 @@ class EpicAction(object):
     def __repr__(self):
         return json.dumps(self.__dict__, indent=4)
 
+    def set_previous_actions(self, actions):
+        self.actions_prev = actions
+
 
 ##################################################
 # Video on the EK Dataset
@@ -69,6 +72,7 @@ class EpicVideo(object):
 
     def _get_actions(self):
         actions = []
+        _actions_all = [] # list of all actions and invalid actions
         actions_invalid = []
         video_duration = self.df['stop_time'].values.max()
         for _, row in self.df.iterrows():
@@ -94,6 +98,7 @@ class EpicVideo(object):
                 'action_class': row.action_class,
             }
             action = EpicAction(**action_args)
+            action.set_previous_actions(_actions_all)
             if self.task == 'recognition':
                 actions += [action]
             elif self.task in ['anticipation', 'anticipation_recognition']:
@@ -103,6 +108,7 @@ class EpicVideo(object):
                     actions += [action]
                 else:
                     actions_invalid += [action]
+            _actions_all += [action]
         return actions, actions_invalid
 
 class EpicClip(object):
@@ -122,7 +128,8 @@ class EpicClip(object):
 ##################################################
 
 class EpicDataset(Dataset):
-    def __init__(self, df, partition, fps=5.0, loader=None, task='recognition', t_ant=None):
+    def __init__(self, df, partition, fps=5.0, loader=None, task='recognition', t_ant=None, transform=None, 
+                 num_actions_prev=None):
         super().__init__()
         self.partition = partition
         self.fps = fps
@@ -130,6 +137,8 @@ class EpicDataset(Dataset):
         self.loader = loader
         self.task = task
         self.t_ant = t_ant
+        self.transform = transform
+        self.num_actions_prev = num_actions_prev
 
         self.videos = self._get_videos()
         self.actions, self.actions_invalid = self._get_actions()
@@ -175,6 +184,14 @@ class EpicDataset(Dataset):
             sample['verb_class'] = a.verb_class
             sample['noun_class'] = a.noun_class
             sample['action_class'] = a.action_class
+
+        if self.task == 'anticipation':
+            actions_prev = [-1] + [aa.action_class for aa in a.actions_prev]
+            actions_prev = actions_prev[-self.num_actions_prev:]
+            if len(actions_prev) < self.num_actions_prev:
+                actions_prev = (actions_prev[0:1] * self.num_actions_prev - len(actions_prev)) + actions_prev
+                actions_prev = np.array(actions_prev, dtype=np.int64)
+            sample['action_class_prev'] = actions_prev
         return sample
 
 
