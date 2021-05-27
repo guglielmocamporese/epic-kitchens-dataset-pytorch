@@ -112,8 +112,13 @@ def sample_action_anticipation_frames(time_start, t_buffer, t_ant, fps=5.0, fps_
     num_frames = int(np.floor(t_buffer * fps))
     times = (np.arange(num_frames) - num_frames) / fps + time_start
     times = np.clip(times, 0, np.inf)
+    times = times.astype(np.float32)
     mask = 1.0 * ((time_start - times) >= t_ant)
-    frames_idxs = np.round(times * fps_init).astype(np.int32) + 1 # first frame is 1 not 0
+    if (fps_init / fps) < 1e-5:
+        frames_idxs = np.round(times * fps_init).astype(np.int32)
+    else:
+        frames_idxs = np.floor(times * fps_init).astype(np.int32) + 1# first frame is 1 not 0
+    times = (frames_idxs- 1) / fps_init
     return times, frames_idxs, mask
 
 
@@ -210,6 +215,7 @@ class FeaturesLoader(object):
             out['mask'] = mask
         out['times'] = times
         out['start_time'] = action.start_time
+        out['frames_idxs'] = frames_idxs
         return out
     
 
