@@ -5,6 +5,7 @@
 from torch.utils.data import Dataset, DataLoader, Subset
 from tqdm import tqdm
 import json
+import numpy as np
 
 # Custom
 from .utils import get_ek55_annotation, get_ek100_annotation
@@ -98,7 +99,7 @@ class EpicVideo(object):
                 'action_class': row.action_class,
             }
             action = EpicAction(**action_args)
-            action.set_previous_actions(_actions_all)
+            action.set_previous_actions([aa for aa in _actions_all])
             if self.task == 'recognition':
                 actions += [action]
             elif self.task in ['anticipation', 'anticipation_recognition']:
@@ -189,8 +190,8 @@ class EpicDataset(Dataset):
             actions_prev = [-1] + [aa.action_class for aa in a.actions_prev]
             actions_prev = actions_prev[-self.num_actions_prev:]
             if len(actions_prev) < self.num_actions_prev:
-                actions_prev = (actions_prev[0:1] * self.num_actions_prev - len(actions_prev)) + actions_prev
-                actions_prev = np.array(actions_prev, dtype=np.int64)
+                actions_prev = actions_prev[0:1] * (self.num_actions_prev - len(actions_prev)) + actions_prev
+            actions_prev = np.array(actions_prev, dtype=np.int64)
             sample['action_class_prev'] = actions_prev
         return sample
 
@@ -276,6 +277,7 @@ def get_datasets(args):
             'fps': args.fps,
             'task': args.task,
             't_ant': args.t_ant,
+            'num_actions_prev': args.num_actions_prev if args.task in ['anticipation', 'anticipation_recognition'] else None,
         }
         epic_ds = EpicDataset
     else:
