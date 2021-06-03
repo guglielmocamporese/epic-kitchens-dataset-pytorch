@@ -277,7 +277,8 @@ def get_datasets(args):
             'fps': args.fps,
             'task': args.task,
             't_ant': args.t_ant,
-            'num_actions_prev': args.num_actions_prev if args.task in ['anticipation', 'anticipation_recognition'] else None,
+            'num_actions_prev': args.num_actions_prev 
+                if args.task in ['anticipation', 'anticipation_recognition'] else None,
         }
         epic_ds = EpicDataset
     else:

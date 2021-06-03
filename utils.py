@@ -257,8 +257,8 @@ def get_ek100_annotation(partition, validation_ratio=0.2, use_rulstm_splits=Fals
                 print(a_cl)
             action_classes += [a_cl[0]]
             actions += [a[0]]
-        df['action_class'] = df['verb_class'] #action_classes
-        df['action'] = df['verb'] #actions
+        df['action_class'] = action_classes
+        df['action'] = actions
         df['all_nouns'] = df['all_nouns'].map(lambda x: str2list(x))
         df['all_noun_classes'] = df['all_noun_classes'].map(lambda x: str2list(x, out_type=int))
 
