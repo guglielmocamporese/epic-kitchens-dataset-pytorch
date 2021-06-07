@@ -5,6 +5,7 @@
 import numpy as np
 from PIL import Image
 from torchvision import transforms
+import torchaudio
 import torch
 import lmdb
 import os
@@ -217,8 +218,34 @@ class FeaturesLoader(object):
         out['start_time'] = action.start_time
         out['frames_idxs'] = frames_idxs
         return out
-    
 
+class AudioLoader(object):
+    def __init__(self, audio_base_path, duration=5.0, transform=None):
+        self.audio_base_path = audio_base_path
+        self.duration = duration
+        self.transform = transform
+    
+    def __call__(self, action):
+        partition = 'train' if action.partition in ['training', 'train', 'train_aug', 'validate', 'validation'] else 'test'
+        audio_path = os.path.join(self.audio_base_path, partition, action.participant_id, 
+                                  f'{action.video_id}.mp3')
+        audio, sample_rate = torchaudio.load(audio_path)
+        center_time = (action.start_time + action.stop_time) / 2.0
+        t0 = center_time - self.duration / 2.0
+        t0 = max(0, t0)
+        t1 = t0 + self.duration
+        t1 = min(t1, action.video_duration)
+        t0 = t1 - self.duration
+        idx0 = int(t0 * sample_rate)
+        idx1 = int(t1 * sample_rate)
+        audio = audio[:, idx0:idx1]
+        if self.transform is not None:
+            audio = self.transform(audio)
+        out = {
+            'audio_raw': audio,
+        }
+        return out
+    
 class PipeLoaders(object):
     """
     Chain loaders.
@@ -289,6 +316,37 @@ def get_features_loader(args):
     }
     return feat_loaders
 
+def get_audio_loaders(args):
+    if args.task != 'recognition':
+        raise Exception('Error. Audio raw is supported only for the recognition task.')
+    n_fft = 1024
+    spec_args = {
+        'sample_rate': 44100,
+        'n_fft': n_fft,
+        'win_length': n_fft,
+        'hop_length': n_fft // 2,
+        'normalized': True,
+        'n_mels': 128,
+    }
+    transform_audio = transforms.Compose([
+        lambda x: x.repeat(2, 1) if x.shape[0] == 1 else x, # Simulate stereo audio, if input is mono
+        torchaudio.transforms.MelSpectrogram(**spec_args),
+        torchaudio.transforms.AmplitudeToDB(),
+        transforms.Resize((224, 224)),
+    ])
+    loader_args = {
+        'audio_base_path': args.audio_base_path,
+        'duration': 5.0,
+        'transform': transform_audio,
+    }
+    loaders = {
+        'train': AudioLoader(**loader_args),
+        'train_aug': AudioLoader(**loader_args),
+        'validation': AudioLoader(**loader_args),
+        'test': AudioLoader(**loader_args),
+    }
+    return loaders
+
 def get_loaders(args):
     
     loaders = {
@@ -304,6 +362,13 @@ def get_loaders(args):
         for k, l in frame_loaders.items():
             if l is not None:
                 loaders[k] += [l]
+
+    if 'audio_raw' in args.modalities:
+        audio_raw_loader = get_audio_loaders(args)
+        for k, l in audio_raw_loader.items():
+            if l is not None:
+                loaders[k] += [l]
+
             
     # Features
     feat_loaders = get_features_loader(args)
