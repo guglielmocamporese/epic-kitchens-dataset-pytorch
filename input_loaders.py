@@ -289,7 +289,7 @@ def get_frames_loader(args):
 
 def get_features_loader(args):
     sampler = get_sampler(args)
-    modalities = args.modalities.split()
+    modalities = args.modalities
     feat_in_modalities = list({'rgb', 'flow', 'obj'}.intersection(set(modalities)))
     transform_feat = lambda x: torch.tensor(x.copy())
     transform_video = lambda x: torch.stack(x, 0) # [T, D]
