@@ -87,3 +87,8 @@ $ ./setup_annotations.sh
 $ python example.py
 ```
 
+# Credits 
+
+``` Created colab ready code from 
+https://github.com/guglielmocamporese/epic-kitchens-dataset-pytorch
+```
